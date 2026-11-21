@@ -1,0 +1,49 @@
+name: Update Taobao Goods and Deploy
+
+on:
+  schedule:
+    # 每 6 小时运行一次 (CRON 表达式，注意 GitHub 使用 UTC 时间)
+    # 下面表示 UTC 时间的 0, 6, 12, 18 点运行
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch: # 允许手动触发测试
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. 安装依赖 (如果 fetch_goods.js 用到了 axios 等库)
+      - name: Install dependencies
+        run: |
+          cd src
+          npm init -y
+          npm install axios # 示例依赖，根据实际需求安装
+
+      # 4. 运行脚本生成 HTML
+      - name: Generate Static HTML
+        env:
+          TB_APP_KEY: ${{ secrets.TB_APP_KEY }}
+          TB_APP_SECRET: ${{ secrets.TB_APP_SECRET }}
+          TB_ADZONE_ID: ${{ secrets.TB_ADZONE_ID }}
+        run: node src/fetch_goods.js
+
+      # 5. 部署到 GitHub Pages
+      # 方法 A: 使用官方 action 推送到 gh-pages 分支
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ # 假设 index.html 生成在根目录
+          # 如果生成在 dist 目录，则改为 ./dist
+          keep_files: false # 是否保留旧文件，通常设为 false 以完全覆盖
