@@ -28,7 +28,7 @@ jobs:
         run: |
           cd src
           npm init -y
-          npm install axios # 示例依赖，根据实际需求安装
+          npm install axios --no-package-lock # 示例依赖，根据实际需求安装
 
       # 4. 运行脚本生成 HTML
       - name: Generate Static HTML
