@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: ''
 
       # 3. 安装依赖 (如果 fetch_goods.js 用到了 axios 等库)
       - name: Install dependencies
