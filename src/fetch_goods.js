@@ -20,7 +20,7 @@ async function main() {
     // 实际项目中，这里应使用 top-sdk-node 或自行实现签名请求调用 taobao.tbk.item.recommend.get
     // 此处为伪代码示例，假设 getDataFromTaobao 是你封装好的请求函数
     // const goodsList = await getDataFromTaobao(appKey, appSecret, adzoneId);
-    
+   /* 
     // 为了演示，这里生成一些 mock 数据
     const goodsList = [
         {
@@ -40,7 +40,13 @@ async function main() {
             commission_rate: "1500"
         }
     ];
+*/
+    const { getDataFromTaobao } = require('./taobao-api');
 
+// ...中间省略
+
+// 原来那行伪代码改为：
+const goodsList = await getDataFromTaobao(appKey, appSecret, adzoneId);
     console.log(`成功获取 ${goodsList.length} 个商品`);
 
     // 3. 读取 HTML 模板
