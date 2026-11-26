@@ -83,28 +83,39 @@ function formatTime(date) {
 }
 
 /**
- * 拉取淘宝客高佣商品列表核心封装
+ * 拉取淘宝客高佣商品列表（官方现行通用物料搜索接口）
  */
 async function getDataFromTaobao(appKey, appSecret, adzoneId) {
-  const res = await requestTop('taobao.tbk.item.recommend.get', {
+  const res = await requestTop('taobao.tbk.dg.material.optional', {
     adzone_id: adzoneId,
     page_no: 1,
-    page_size: 100,
-    sort: 'total_sales_des',
-    platform: 2,
+    page_size: 50, // 单页最大支持100，建议50足够用
+    sort: 'total_sales_des', // 按销量倒序
+    platform: 2, // 2=无线端商品
+    has_coupon: 'true', // 只返回有优惠券的商品
+    start_tk_rate: '1000', // 最低佣金比例10%（单位是千分比，1000=10%）
+    end_tk_rate: '9000', // 最高佣金比例90%
   }, appKey, appSecret);
 
-  // 返回值字段对齐你前端渲染脚本（pict_url / zk_final_price / coupon_amount / commission_rate）
-  const list = res.tbk_item_recommend_get_response?.result?.results?.n_tbk_item || [];
+  // 新版接口返回路径对应调整
+  const list = res.tbk_dg_material_optional_response?.result_list?.map_data || [];
   return list.map(item => ({
     title: item.title,
     pict_url: item.pict_url,
     zk_final_price: item.zk_final_price,
-    coupon_amount: item.coupon_amount || 0,
-    num_iid: item.num_iid,
+    coupon_amount: item.coupon_info ? parseCouponAmount(item.coupon_info) : 0,
+    num_iid: item.item_id,
     commission_rate: item.commission_rate,
     volume: item.volume,
+    coupon_share_url: item.coupon_share_url,
   }));
 }
+
+// 解析券面额（新版接口券信息是字符串格式，需要提取数字）
+function parseCouponAmount(couponInfo) {
+  const match = couponInfo.match(/减(\d+(?:\.\d+)?)元/);
+  return match ? parseFloat(match[1]) : 0;
+}
+
 
 module.exports = { getDataFromTaobao, requestTop, sign };
