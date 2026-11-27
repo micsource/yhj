@@ -24,9 +24,13 @@ async function main() {
     if (!appKey || !appSecret) {
         throw new Error('缺少必要的环境变量 TB_APP_KEY 或 TB_APP_SECRET');
     }
-
+    
+    // 原有三个环境变量读取下面加这两行
+    const siteId = process.env.TB_SITE_ID;
+    if (!siteId) throw new Error('缺少必要的环境变量 TB_SITE_ID');
+    
     // 2. 调用淘宝联盟接口获取商品
-    const goodsList = await getDataFromTaobao(appKey, appSecret, adzoneId);
+    const goodsList = await getDataFromTaobao(appKey, appSecret, siteId, adzoneId);
     console.log(`成功获取 ${goodsList.length} 个商品`);
 
     // 3. 生成商品卡片 HTML
