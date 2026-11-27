@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '18'
           cache: ''
 
       # 3. 安装依赖 (如果 fetch_goods.js 用到了 axios 等库)
