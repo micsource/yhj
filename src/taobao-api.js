@@ -87,33 +87,46 @@ function formatTime(date) {
  */
 async function getDataFromTaobao(appKey, appSecret, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
-    adzone_id: adzoneId,        // 只填 PID 最后一段数字
-    q: '女装',                   // 换成你的选品关键词，或改用 cat 类目筛选
+    adzone_id: adzoneId,
     page_no: 1,
     page_size: 50,
     sort: 'total_sales_des',
     has_coupon: 'true',
-    start_tk_rate: '1000',      // 最低佣金 10%（千分比）
+    start_tk_rate: '1000',
   }, appKey, appSecret);
 
-  // 先打印一次原始返回，核对根节点与字段名（确认后可删掉这行）
-  console.log(JSON.stringify(res, null, 2).slice(0, 2000));
-
+  // 升级版真实返回路径，字段全部校准
   const list = res.tbk_dg_material_optional_upgrade_response?.result_list?.map_data || [];
+  
   return list.map(item => {
     const income = item.income_info || {};
+    // 券信息解析兼容新旧格式
+    let couponAmount = 0;
+    if (item.coupon_info) {
+      const match = item.coupon_info.match(/减(\d+(?:\.\d+)?)元/);
+      couponAmount = match ? parseFloat(match[1]) : 0;
+    }
+    const originalPrice = parseFloat(item.zk_final_price || 0);
+    const couponPrice = (originalPrice - couponAmount).toFixed(1);
+    // 佣金计算
+    const commissionRate = parseInt(income.commission_rate || item.commission_rate || 0);
+    const commission = (couponPrice * commissionRate / 10000).toFixed(1);
+
     return {
       title: item.title,
       pict_url: item.pict_url,
-      zk_final_price: item.zk_final_price,
-      coupon_amount: item.coupon_info ? parseCouponAmount(item.coupon_info) : 0,
-      num_iid: item.item_id,                       // 升级版字段名是 item_id
-      commission_rate: income.commission_rate || item.commission_rate,
-      volume: item.volume,
-      coupon_share_url: item.coupon_share_url,
+      zk_final_price: originalPrice,
+      coupon_amount: couponAmount,
+      num_iid: item.item_id,
+      commission_rate: commissionRate,
+      commission: commission,
+      volume: item.volume || 0,
+      // 直接用接口返回的转链结果，不需要手动拼接s.click链接
+      coupon_share_url: item.coupon_share_url || item.url,
     };
   });
 }
+
 
 
 // 解析券面额（新版接口券信息是字符串格式，需要提取数字）
