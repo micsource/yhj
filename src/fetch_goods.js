@@ -48,32 +48,44 @@ async function main() {
 // 原来那行伪代码改为：
 const goodsList = await getDataFromTaobao(appKey, appSecret, adzoneId);
     console.log(`成功获取 ${goodsList.length} 个商品`);
+    
+const goodsHtml = goodsList.map(item => {
+    const originalPrice = parseFloat(item.zk_final_price || 0);
+    const couponAmount = parseFloat(item.coupon_amount || 0);
+    const finalPrice = (originalPrice - couponAmount).toFixed(1);
+    return `
+    <div class="goods-card">
+        <a href="${item.coupon_share_url}" target="_blank" rel="nofollow">
+            <img class="goods-img" src="${item.pict_url}" alt="${item.title}" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title">${item.title}</div>
+                <div class="price-row">
+                    <span class="coupon-price">¥${finalPrice}</span>
+                    <span class="original-price">¥${originalPrice.toFixed(1)}</span>
+                    ${couponAmount > 0 ? `<span class="coupon-tag">${couponAmount}元券</span>` : ''}
+                </div>
+                <div class="commission-row">
+                    销量 ${item.volume || 0}</span>
+                    <span class="commission">预估赚 ¥${item.commission || 0}</span>
+                </div>
+            </div>
+        </a>
+    </div>`;
+}).join('\n');
 
-    // 3. 读取 HTML 模板
-    const templatePath = path.join(__dirname, 'template.html');
-    let htmlContent = fs.readFileSync(templatePath, 'utf-8');
+// 读模板、替换占位符、输出
+const templatePath = path.join(__dirname, 'template.html');
+const outputPath = path.join(__dirname, '..', 'index.html');
+let htmlContent = fs.readFileSync(templatePath, 'utf-8');
 
-    // 4. 渲染数据到 HTML
-    // 简单替换示例：在实际生产中，建议使用 ejs, handlebars 等模板引擎
-    const goodsHtml = goodsList.map(item => {
-        const finalPrice = (parseFloat(item.zk_final_price) - parseFloat(item.coupon_amount)).toFixed(1);
-        return `
-        <div class="goods-card">
-            <img src="${item.pict_url}" alt="${item.title}">
-            <h3>${item.title}</h3>
-            <p>券后价: ¥${finalPrice}</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=${item.num_iid}%26pid=${adzoneId}" target="_blank">立即领券</a>
-        </div>
-        `;
-    }).join('');
+htmlContent = htmlContent.replace(
+    '<!-- GOODS_LIST -->',
+    goodsHtml || '<div class="empty">暂无商品数据</div>'
+);
 
-    // 假设模板中有一个 <!-- GOODS_LIST --> 占位符
-    htmlContent = htmlContent.replace('<!-- GOODS_LIST -->', goodsHtml);
+fs.writeFileSync(outputPath, htmlContent);
+console.log('HTML 生成完毕，商品数：', goodsList.length);
 
-    // 5. 输出最终 HTML 到根目录或 dist 目录
-    const outputPath = path.join(__dirname, '..', 'index.html');
-    fs.writeFileSync(outputPath, htmlContent);
-    console.log('HTML 文件生成完毕:', outputPath);
 }
 
 main().catch(err => {
