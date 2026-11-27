@@ -111,18 +111,22 @@ function formatTime(date) {
 async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
     adzone_id: adzoneId,
-    site_id: siteId, // ✅ 补上之前漏掉的必填站点ID
+    site_id: siteId,
+    material_id: 28102, // ✅ 补上这行，官方通用高佣物料池
     page_no: 1,
-    page_size: 20, // 首次测试先调小每页数量
-    platform: 2, // 指定无线端商品，匹配移动端推广
+    page_size: 20,
+    platform: 2,
     sort: 'total_sales_des',
-    q: '纸巾', // ✅ 换成肯定有结果的日用刚需词，不要用"高佣爆款"这类泛营销词
-    // ✅ 首次测试先注释掉所有筛选条件，确认能拿到数据后再逐步放开
+    q: '手机壳', // 换成绝对有结果的通用刚需词，比如手机壳、纸巾、袜子
+    // 先注释掉所有筛选条件，拿到商品后再加
     // has_coupon: 'true',
     // start_tk_rate: '1000',
   }, appKey, appSecret);
 
   console.log('接口返回成功，开始解析商品数据');
+  // 加这行调试，日志里会打印接口原始返回，一眼就能看到是权限问题还是参数问题
+  console.log('接口原始返回：', JSON.stringify(res, null, 2).slice(0, 3000));
+  
   const list = res.tbk_dg_material_optional_upgrade_response?.result_list?.map_data || [];
 
   return list.map(item => {
