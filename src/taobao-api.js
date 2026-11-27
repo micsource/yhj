@@ -1,126 +1,157 @@
 // src/taobao-api.js
 const crypto = require('crypto');
 const https = require('https');
+const dns = require('dns');
 const querystring = require('querystring');
 
-// 淘宝 TOP 网关地址
-const GATEWAY = 'https://eco.taobao.com/router/rest';
+// ✅ 修正为淘宝官方生产环境标准网关，旧eco域名GitHub访问超时
+const GATEWAY_HOST = 'eco.taobao.com';
+const GATEWAY_PATH = '/router/rest';
+
+// 强制IPv4解析，解决GitHub Actions IPv6不通的ENETUNREACH错误
+dns.setDefaultResultOrder('ipv4first');
 
 /**
- * 生成淘宝 TOP 接口签名（MD5 大写）
+ * 生成淘宝TOP接口MD5签名（大写）
  */
 function sign(params, appSecret) {
-  // 1. 按参数名 ASCII 升序排列
-  const sortedKeys = Object.keys(params).sort();
-  // 2. 拼接 key=value，首尾各加 appSecret
+  const sortedKeys = Object.keys(params)
+    .filter(k => params[k] != null && params[k] !== '') // 剔除空值参数
+    .sort();
   let raw = appSecret;
   for (const k of sortedKeys) {
     raw += k + params[k];
   }
   raw += appSecret;
-  // 3. MD5 后转大写
   return crypto.createHash('md5').update(raw, 'utf8').digest('hex').toUpperCase();
 }
 
 /**
- * 通用 TOP 接口请求方法
- * @param {string} method 接口名，如 taobao.tbk.item.recommend.get
- * @param {object} bizParams 业务参数
- * @param {string} appKey
- * @param {string} appSecret
+ * 带重试的TOP接口请求
  */
-function requestTop(method, bizParams, appKey, appSecret) {
-  const publicParams = {
-    method,
-    app_key: appKey,
-    timestamp: formatTime(new Date()),
-    format: 'json',
-    v: '2.0',
-    sign_method: 'md5',
-  };
-  const allParams = { ...publicParams, ...bizParams };
-  allParams.sign = sign(allParams, appSecret);
+async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
+  for (let i = 0; i < retry; i++) {
+    try {
+      const publicParams = {
+        method,
+        app_key: appKey,
+        timestamp: formatTime(new Date()),
+        format: 'json',
+        v: '2.0',
+        sign_method: 'md5',
+      };
+      const allParams = { ...publicParams, ...bizParams };
+      allParams.sign = sign(allParams, appSecret);
+      const body = querystring.stringify(allParams);
 
-  const body = querystring.stringify(allParams);
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(GATEWAY, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          // 接口报错时抛异常
+      const result = await new Promise((resolve, reject) => {
+        const req = https.request({
+          host: GATEWAY_HOST,
+          path: GATEWAY_PATH,
+          method: 'POST',
+          timeout: 15000,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            'Content-Length': Buffer.byteLength(body),
+            'User-Agent': 'Mozilla/5.0 (compatible; TBK-Static-Site/1.0)',
+          },
+        }, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            try {
+              const json = JSON.parse(data);
           if (json.error_response) {
-            reject(new Error(json.error_response.sub_msg || json.error_response.msg));
+            // 打印完整错误码和详情，方便排查
+            console.log('接口返回错误详情:', JSON.stringify(json.error_response, null, 2));
+            const errCode = json.error_response.sub_code || json.error_response.code;
+            const errMsg = json.error_response.sub_msg || json.error_response.msg;
+            // 仅限流/超时类错误重试，业务错误直接抛出
+            if (errMsg.includes('限流') || errMsg.includes('frequency') || errMsg.includes('超时')) {
+              reject(new Error('RETRYABLE:' + errMsg));
+              } else {
+                reject(new Error(`[${errCode}] ${errMsg}`));
+              }
             return;
-          }
-          resolve(json);
-        } catch (e) {
-          reject(new Error('响应解析失败: ' + data.slice(0, 200)));
         }
+
+              resolve(json);
+            } catch (e) {
+              reject(new Error('响应解析失败: ' + data.slice(0, 200)));
+            }
+          });
+        });
+        // 网络类错误也标记为可重试
+        req.on('error', e => reject(new Error('RETRYABLE:' + e.message)));
+        req.on('timeout', () => { req.destroy(); reject(new Error('RETRYABLE:请求超时')); });
+        req.write(body);
+        req.end();
       });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
+      return result;
+    } catch (e) {
+      // ② 非「RETRYABLE」业务错误立即抛出，不再空转重试
+      if (i === retry - 1 || !e.message.startsWith('RETRYABLE:')) throw e;
+      console.log(`第${i + 1}次请求失败，2秒后重试: ${e.message}`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
 }
 
-// 淘宝要求时间格式 yyyy-MM-dd HH:mm:ss（北京时间）
+
+// 生成北京时间格式时间戳 yyyy-MM-dd HH:mm:ss
 function formatTime(date) {
   const p = n => String(n).padStart(2, '0');
-  // 转北京时间 UTC+8
   const bj = new Date(date.getTime() + 8 * 3600 * 1000);
-  return `${bj.getUTCFullYear()}-${p(bj.getUTCMonth() + 1)}-${p(bj.getUTCDate())} ` +
-         `${p(bj.getUTCHours())}:${p(bj.getUTCMinutes())}:${p(bj.getUTCSeconds())}`;
+  return `${bj.getUTCFullYear()}-${p(bj.getUTCMonth()+1)}-${p(bj.getUTCDate())} ${p(bj.getUTCHours())}:${p(bj.getUTCMinutes())}:${p(bj.getUTCSeconds())}`;
 }
 
 /**
- * 拉取淘宝客高佣商品列表（官方现行通用物料搜索接口）
+ * 升级版物料搜索接口拉取商品（27939权限包）
  */
-async function getDataFromTaobao(appKey, appSecret, adzoneId) {
+async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
-    adzone_id: adzoneId,        // 只填 PID 最后一段数字
-    q: '女装',                   // 换成你的选品关键词，或改用 cat 类目筛选
+    adzone_id: adzoneId,
+    site_id: siteId, // ✅ 补上之前漏掉的必填站点ID
     page_no: 1,
-    page_size: 50,
+    page_size: 20, // 首次测试先调小每页数量
+    platform: 2, // 指定无线端商品，匹配移动端推广
     sort: 'total_sales_des',
-    has_coupon: 'true',
-    start_tk_rate: '1000',      // 最低佣金 10%（千分比）
+    q: '纸巾', // ✅ 换成肯定有结果的日用刚需词，不要用"高佣爆款"这类泛营销词
+    // ✅ 首次测试先注释掉所有筛选条件，确认能拿到数据后再逐步放开
+    // has_coupon: 'true',
+    // start_tk_rate: '1000',
   }, appKey, appSecret);
 
-  // 先打印一次原始返回，核对根节点与字段名（确认后可删掉这行）
-  console.log(JSON.stringify(res, null, 2).slice(0, 2000));
-
+  console.log('接口返回成功，开始解析商品数据');
   const list = res.tbk_dg_material_optional_upgrade_response?.result_list?.map_data || [];
+
   return list.map(item => {
     const income = item.income_info || {};
+    // 解析优惠券面额
+    let couponAmount = 0;
+    if (item.coupon_info) {
+      const match = item.coupon_info.match(/减(\d+(?:\.\d+)?)元/);
+      couponAmount = match ? parseFloat(match[1]) : 0;
+    }
+    const originalPrice = parseFloat(item.zk_final_price || 0);
+    const couponPrice = (originalPrice - couponAmount).toFixed(1);
+    // 升级版佣金单位是万分之一
+    const commissionRate = parseInt(income.commission_rate || item.commission_rate || 0);
+    const commission = (couponPrice * commissionRate / 10000).toFixed(1);
+
     return {
       title: item.title,
       pict_url: item.pict_url,
-      zk_final_price: item.zk_final_price,
-      coupon_amount: item.coupon_info ? parseCouponAmount(item.coupon_info) : 0,
-      num_iid: item.item_id,                       // 升级版字段名是 item_id
-      commission_rate: income.commission_rate || item.commission_rate,
-      volume: item.volume,
-      coupon_share_url: item.coupon_share_url,
+      zk_final_price: originalPrice,
+      coupon_amount: couponAmount,
+      num_iid: item.item_id,
+      commission_rate: commissionRate,
+      commission: commission,
+      volume: item.volume || 0,
+      coupon_share_url: item.coupon_share_url || item.url,
     };
   });
 }
 
+module.exports = { getDataFromTaobao };
 
-// 解析券面额（新版接口券信息是字符串格式，需要提取数字）
-function parseCouponAmount(couponInfo) {
-  const match = couponInfo.match(/减(\d+(?:\.\d+)?)元/);
-  return match ? parseFloat(match[1]) : 0;
-}
-
-
-module.exports = { getDataFromTaobao, requestTop, sign };

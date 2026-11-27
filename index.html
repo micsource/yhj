@@ -1,378 +1,451 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>淘宝客精选</title>
-    <style>
-        body { font-family: sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .goods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .goods-card { border: 1px solid #eee; padding: 10px; border-radius: 8px; text-align: center; }
-        .goods-card img { max-width: 100%; height: auto; }
-        h3 { font-size: 14px; height: 40px; overflow: hidden; }
-        a { display: inline-block; background: #ff4444; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; margin-top: 10px; }
+    
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 22px; color: #ff4444; margin-bottom: 6px; }
+        .header p { font-size: 13px; color: #999; }
+
+        .goods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .goods-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .goods-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+        .goods-card a { display: block; color: inherit; text-decoration: none; }
+
+        .goods-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #f0f0f0;
+            display: block;
+        }
+        .goods-info { padding: 10px 12px 12px; }
+        .goods-title {
+            font-size: 13px;
+            line-height: 1.45;
+            color: #333;
+            height: 38px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 8px;
+        }
+        .price-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .coupon-price { font-size: 19px; font-weight: 700; color: #ff4444; }
+        .original-price { font-size: 12px; color: #999; text-decoration: line-through; }
+        .coupon-tag {
+            background: #ff4444;
+            color: #fff;
+            font-size: 11px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: auto;
+        }
+        .commission-row { display: flex; justify-content: space-between; font-size: 12px; color: #999; }
+        .commission { color: #ff6600; font-weight: 600; }
+
+        .empty { grid-column: 1 / -1; text-align: center; color: #999; padding: 60px 0; }
+        footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 30px; }
     </style>
 </head>
-<body>
-    <h1>每日精选好物</h1>
+
+    <div class="header">
+        <h1>每日精选好物</h1>
+        <p>每日自动更新高性价比优惠商品</p>
+    </div>
+
     <div class="goods-grid">
         
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=NAObxVwu5tG6YPrN7kTxbwSRtB-B62ZzvhZZrqGZWYuD0%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=aORer88iotMJj3VbWpfQ52Ijty-po4O8xf2zymmbrKhjk%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=WMqJPjWuot2BM6kV8psa7nTQta-X5YZ9GT33Rznxv8cg%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=92zMBe3iBtOD5paxebi2V0HQt6-vjwaMPh8QDxOv0oIdO%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=wAok9aySgtDXpPk3M7IoNqFbtd-JzYZxGCQXo6p2gQUVn%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=PxO7Q25u3t6axZMdk3IvzzsPt6-R4YZyGFVeWb7b8OUx%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=rnXQ02bsOtVeOQ6w8WU6BWuqtZ-mR49AkF748PA0X8uBN%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=nZJyb9ViMt3jdRp7Aefkv5S0tP-Z4YeVGFRPoyKKQJfN%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=YqJdPRqUptX4VemY5PHW64i2t6-Z4YeVGFRyBrgr45Cp%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=92zMBe6TBtOD5paxebi2vxUQt6-7OgmkoiOP3K9XOohV7%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=j6G7A0nI0tJ7AjY0XWUB5VhJte-jbRJewUdrrjv2rnuzw%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=XyqQgxriGtXayzdkZnHVqQCBtg-GazZNGubMPmQ0jmHnZ%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=xWn2dNnTktqaMyWRBrsQJ8sAt9-X5YZ9GT3P8mPYk7UB6%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=Jw5AKoKHRtqrYR8JxWsX37Hvta-bD45KGhv9b46qdQTWZ%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=0qvAPenh7t8bV2Jo0As0gnH2t6-rjK45bhbVgmKW4qIJX%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=KeqWNDkU3toVzwbayOtmGPfJtW-eb4PRGUz9MAygB4tz3%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=4dVbyWpIgtNRPad3JVHwyGfNtg-xjpeqyh6b7GOXxZUJq%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=MNP8JKMiKtXeNA7ky8HV3mUQtA-no4BkAfjo376OWDizg%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=A6NBWQvhzt4XeBd53RsmrPHvtn-JzYZxGCQkPGzan9Cv2%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=gaP80BQt3t2O0r9baxsoRxCatr-YmYwBGhjMoo4wVdFRA%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=PxO7QR9C3t6axZMdk3Iv3PSPt6-eb4PRGUz9BnZKBPS9j%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=rnXQ06RSOtVeOQ6w8WU6kGCqtZ-PqYZPGSOow3QBVRsG2%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=8O8PV5KInt9N04GBxWhgN8Sbt8-rjK45bhMpr4GG0vTJz%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=7Vnr3bBi4t53YkjpJWin79hMtV-Z4YeVGFR2m2DdB3CR9%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=4dVbyWJsgtNRPad3JVHwyBiNtg-JzYZxGCQXr4K8GetVv%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=Q80rJ3giQtB0Z3ygewFX8giatQ-B62ZzvhZpZQZmB7I2%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=Dz32MBQFDt5QwWe3ykiQ80Ijtn-JzYZxGCQXvr7aW7Iv%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=vN6V9eZtZt6728Y9B5IAygC0te-wJewyMCMBWynxwMUyq%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=pvB0nKjsxt6pXNaeWGIewrHptm-9bvkmaU5mv7JG7ZIX0%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=wAok9p8CgtDXpPk3M7IoRjfbtd-V5YZQGTQ7g8A227SgJ%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=4dVbyWZIgtNRPad3JVHwqJtNtg-8n2o4Ds0reAAezWCqd%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=0qvAPeyT7t8bV2Jo0As0ZOf2t6-NPYZ7GFnP3zJr3mIyW%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=dmjAkQ0uZt3vqBpV8JfjgQHet3-no4BkAfjAzNnp50Hzg%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=XyqQgxYfGtXayzdkZnHVN9FBtg-V5YZQGTpM3n20GbCz2%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=OWq5M67izt6nWRPyrDINKAtMtJ-MMYZ5GcAXeD3NQjSZw%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=3Q68nAXTAtYeDKa492i0z2c9tJ-K7YZ8GSjjV8BPYkHn3%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=aORerq6uotMJj3VbWpfQrVtjty-DKmZwGi6dZJR8ZGHO4%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=XyqQgxQuGtXayzdkZnHV9yUBtg-vjwaMPh8eMkvZaQido%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=nZJybDNhMt3jdRp7AefkWVU0tP-MMYZ5GcAp8aRj2bHRX%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=5kn5Pxwuxtyw3dkAQpH7oGUMtV-GazZNGubmreNB0ZsP%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=5kn5Px3Cxtyw3dkAQpH7X8tMtV-R4YZyGFXe4n3mM4UYR%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=ogKq2aVfrtK90o8D3piDqohntN-Z4YeVGFRQjoM7rDuRP%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=4dVbyWehgtNRPad3JVHwqJtNtg-no4BkAfjZ7ZGmW9hBN%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=WMqJPWvUot2BM6kV8psa7vIQta-6g24OmH69adn7nXhKY%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=RbgPJwAFZtjJbDq5pVCrQvCMt6-8n2o4Ds5bp46p6ntA%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=rnXQ062uOtVeOQ6w8WU6kKSqtZ-y9Np0qFANXbzqNZHy7%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=j6G7A22h0tJ7AjY0XWUBxXuJte-eb4PRGUzxVJjkRkcj%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=WMqJPWDsot2BM6kV8psagRFQta-po4O8xf2zK0WR0Bijk%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=7Vnr3bkH4t53YkjpJWino2cMtV-Ao2Z3gfKJjY3oaGCYD%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
-        <div class="goods-card">
-            <img src="undefined" alt="undefined">
-            <h3>undefined</h3>
-            <p>券后价: ¥NaN</p>
-            <a href="https://s.click.taobao.com/t?e=m%3D2%26s=pvB0nKGfxt6pXNaeWGIeNOUptm-po4O8xf2zR7b6A0Tq4%26pid=109853100055" target="_blank">立即领券</a>
-        </div>
-        
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
     </div>
-    <footer>
-        <p>更新时间: <span id="update-time"></span></p>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="goods-card">
+        <a href="undefined" target="_blank" rel="nofollow">
+            <img class="goods-img" src="undefined" alt="" loading="lazy">
+            <div class="goods-info">
+                <div class="goods-title"></div>
+                <div class="price-row">
+                    <span class="coupon-price">¥0.0</span>
+                    <span class="original-price">¥0.0</span>
+                    
+                </div>
+                <div class="commission-row">
+                    <span>销量 0</span>
+                    <span class="commission">预估赚 ¥0.0</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    </div>
+
+     <footer>
+        更新时间：<span id="update-time"></span></p>
     </footer>
-    <script>
-        document.getElementById('update-time').innerText = new Date().toLocaleString();
+
+     <script>
+        // 仅用于兜底展示浏览器当前时间，商品数据不在这里渲染
+        document.getElementById('update-time').innerText = new Date().toLocaleString('zh-CN');
     </script>
 </body>
 </html>
