@@ -5,7 +5,7 @@ const dns = require('dns');
 const querystring = require('querystring');
 
 // ✅ 修正为淘宝官方生产环境标准网关，旧eco域名GitHub访问超时
-const GATEWAY_HOST = 'gw.api.taobao.com';
+const GATEWAY_HOST = 'eco.taobao.com';
 const GATEWAY_PATH = '/router/rest';
 
 // 强制IPv4解析，解决GitHub Actions IPv6不通的ENETUNREACH错误
