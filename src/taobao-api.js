@@ -111,6 +111,7 @@ async function getDataFromTaobao(appKey, appSecret, adzoneId) {
     sort: 'total_sales_des',
     has_coupon: 'true',
     start_tk_rate: '1000', // 最低佣金10%
+    q: '高佣爆款', // ✅ 补上这行搜索关键词，或者传cat类目ID，二选一即可
   }, appKey, appSecret);
 
   console.log('接口返回成功，开始解析商品数据');
