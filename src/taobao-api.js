@@ -108,9 +108,10 @@ function formatTime(date) {
 /**
  * 升级版物料搜索接口拉取商品（27939权限包）
  */
-async function getDataFromTaobao(appKey, appSecret, adzoneId) {
+async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
     adzone_id: adzoneId,
+    site_id: siteId, // ✅ 补上之前漏掉的必填站点ID
     page_no: 1,
     page_size: 50,
     sort: 'total_sales_des',
