@@ -112,7 +112,7 @@ async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.recommend', {
     page_size: '20',
     page_no: '1',
-    material_id: '28102', // 个人通用高佣爆品池，换品类改这个ID即可
+    material_id: '80309', // 个人通用高佣爆品池，换品类改这个ID即可
     adzone_id: adzoneId,
     site_id: siteId,
     promotion_type: '2', // 仅返回有优惠券的商品
