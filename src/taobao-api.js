@@ -109,49 +109,56 @@ function formatTime(date) {
  * 升级版物料搜索接口拉取商品（27939权限包）
  */
 async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
-  const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
+  const res = await requestTop('taobao.tbk.dg.material.recommend', {
+    page_size: '20',
+    page_no: '1',
+    material_id: '4092', // 个人通用高佣爆品池，换品类改这个ID即可
     adzone_id: adzoneId,
-    site_id: siteId, // ✅ 补上之前漏掉的必填站点ID
-    page_no: 1,
-    page_size: 20, // 首次测试先调小每页数量
-    platform: 2, // 指定无线端商品，匹配移动端推广
-    sort: 'total_sales_des',
-    q: '纸巾', // ✅ 换成肯定有结果的日用刚需词，不要用"高佣爆款"这类泛营销词
-    // ✅ 首次测试先注释掉所有筛选条件，确认能拿到数据后再逐步放开
-    // has_coupon: 'true',
-    // start_tk_rate: '1000',
+    site_id: siteId,
+    promotion_type: '2', // 仅返回有优惠券的商品
   }, appKey, appSecret);
 
-  console.log('接口返回成功，开始解析商品数据');
-  const list = res.tbk_dg_material_optional_upgrade_response?.result_list?.map_data || [];
+  console.log('接口返回商品总数：', res.tbk_dg_material_recommend_response?.total_count || 0);
+  const list = res.tbk_dg_material_recommend_response?.result_list?.map_data || [];
 
   return list.map(item => {
-    const income = item.income_info || {};
-    // 解析优惠券面额
-    let couponAmount = 0;
-    if (item.coupon_info) {
-      const match = item.coupon_info.match(/减(\d+(?:\.\d+)?)元/);
-      couponAmount = match ? parseFloat(match[1]) : 0;
-    }
-    const originalPrice = parseFloat(item.zk_final_price || 0);
-    const couponPrice = (originalPrice - couponAmount).toFixed(1);
-    // 升级版佣金单位是万分之一
-    const commissionRate = parseInt(income.commission_rate || item.commission_rate || 0);
-    const commission = (couponPrice * commissionRate / 10000).toFixed(1);
+    // 按官方返回结构分层取字段
+    const basic = item.item_basic_info || {}; // 基础信息：标题、图片、销量
+    const price = item.price_promotion_info || {}; // 价格信息：原价、券后价
+    const publish = item.publish_info || {}; // 推广信息：佣金、跳转链接
+    const income = publish.income_info || {};
+
+    // 1. 基础字段处理：图片补https前缀
+    const title = basic.title || '优惠商品';
+    let pictUrl = basic.pict_url || basic.white_image || '';
+    if (pictUrl.startsWith('//')) pictUrl = 'https:' + pictUrl;
+
+    // 2. 价格&优惠券计算：直接用返回的数值，不用解析字符串
+    const originalPrice = parseFloat(price.zk_final_price || 0);
+    const couponPrice = parseFloat(price.final_promotion_price || originalPrice);
+    const couponAmount = Math.max(0, (originalPrice - couponPrice).toFixed(1)); // 自动算券面额，不用解析coupon_info
+
+    // 3. 佣金处理：优先用接口返回的预估佣金金额，避免单位计算错误
+    const commission = parseFloat(income.commission_amount || 0).toFixed(1);
+    const volume = basic.volume || 0;
+
+    // 4. 推广链接补https前缀
+    let jumpUrl = publish.coupon_share_url || publish.click_url || '';
+    if (jumpUrl.startsWith('//')) jumpUrl = 'https:' + jumpUrl;
 
     return {
-      title: item.title,
-      pict_url: item.pict_url,
+      title,
+      pict_url: pictUrl,
       zk_final_price: originalPrice,
       coupon_amount: couponAmount,
       num_iid: item.item_id,
-      commission_rate: commissionRate,
-      commission: commission,
-      volume: item.volume || 0,
-      coupon_share_url: item.coupon_share_url || item.url,
+      commission,
+      volume,
+      coupon_share_url: jumpUrl,
     };
   });
 }
+
 
 module.exports = { getDataFromTaobao };
 
