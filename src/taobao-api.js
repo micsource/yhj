@@ -49,7 +49,7 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
           host: GATEWAY_HOST,
           path: GATEWAY_PATH,
           method: 'POST',
-          timeout: 15000, // 15秒超时
+          timeout: 15000,
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
             'Content-Length': Buffer.byteLength(body),
@@ -63,9 +63,9 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
               const json = JSON.parse(data);
               if (json.error_response) {
                 const errMsg = json.error_response.sub_msg || json.error_response.msg;
-                // 限流错误重试，其他错误直接抛
-                if (errMsg.includes('限流') || errMsg.includes('frequency')) {
-                  reject(new Error('RATE_LIMITED'));
+                // ① 只有限流/超时类错误才标记为可重试
+                if (errMsg.includes('限流') || errMsg.includes('frequency') || errMsg.includes('超时')) {
+                  reject(new Error('RETRYABLE:' + errMsg));
                 } else {
                   reject(new Error(errMsg));
                 }
@@ -77,21 +77,22 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
             }
           });
         });
-        req.on('error', reject);
-        req.on('timeout', () => { req.destroy(); reject(new Error('请求超时')); });
+        // 网络类错误也标记为可重试
+        req.on('error', e => reject(new Error('RETRYABLE:' + e.message)));
+        req.on('timeout', () => { req.destroy(); reject(new Error('RETRYABLE:请求超时')); });
         req.write(body);
         req.end();
       });
       return result;
     } catch (e) {
-      // 最后一次重试失败才抛错
-      if (i === retry - 1) throw e;
-      // 限流/超时等待2秒再重试
-      console.log(`第${i+1}次请求失败，2秒后重试: ${e.message}`);
+      // ② 非「RETRYABLE」业务错误立即抛出，不再空转重试
+      if (i === retry - 1 || !e.message.startsWith('RETRYABLE:')) throw e;
+      console.log(`第${i + 1}次请求失败，2秒后重试: ${e.message}`);
       await new Promise(r => setTimeout(r, 2000));
     }
   }
 }
+
 
 // 生成北京时间格式时间戳 yyyy-MM-dd HH:mm:ss
 function formatTime(date) {
