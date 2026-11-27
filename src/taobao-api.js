@@ -46,14 +46,16 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
 
       const result = await new Promise((resolve, reject) => {
         const req = https.request({
-          host: GATEWAY_HOST,
-          path: GATEWAY_PATH,
-          method: 'POST',
-          timeout: 15000,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-            'Content-Length': Buffer.byteLength(body),
-            'User-Agent': 'Mozilla/5.0 (compatible; TBK-Static-Site/1.0)',
+         host: GATEWAY_HOST,
+        path: GATEWAY_PATH,
+        method: 'POST',
+        family: 4, // ✅ 强制IPv4连接，兼容所有Node版本，彻底解决IPv6 ENETUNREACH错误
+        timeout: 20000, // 超时时间加到20秒，规避网络波动
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+          'Content-Length': Buffer.byteLength(body),
+          // ✅ 用真实浏览器UA，避免被淘宝网关风控拦截
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
           },
         }, (res) => {
           let data = '';
@@ -82,8 +84,15 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
           });
         });
         // 网络类错误也标记为可重试
-        req.on('error', e => reject(new Error('RETRYABLE:' + e.message)));
-        req.on('timeout', () => { req.destroy(); reject(new Error('RETRYABLE:请求超时')); });
+        req.on('error', e => {
+          console.log('网络错误详情：', e.code, e.message); // 打印完整错误码，方便排查
+          reject(new Error('RETRYABLE:' + (e.message || e.code || '网络连接失败')));
+        });
+        req.on('timeout', () => { 
+          req.destroy(); 
+          reject(new Error('RETRYABLE:请求超时')); 
+        });
+
         req.write(body);
         req.end();
       });
