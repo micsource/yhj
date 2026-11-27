@@ -61,16 +61,20 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
           res.on('end', () => {
             try {
               const json = JSON.parse(data);
-              if (json.error_response) {
-                const errMsg = json.error_response.sub_msg || json.error_response.msg;
-                // ① 只有限流/超时类错误才标记为可重试
-                if (errMsg.includes('限流') || errMsg.includes('frequency') || errMsg.includes('超时')) {
-                  reject(new Error('RETRYABLE:' + errMsg));
-                } else {
-                  reject(new Error(errMsg));
-                }
-                return;
+          if (json.error_response) {
+            // 打印完整错误码和详情，方便排查
+            console.log('接口返回错误详情:', JSON.stringify(json.error_response, null, 2));
+            const errCode = json.error_response.sub_code || json.error_response.code;
+            const errMsg = json.error_response.sub_msg || json.error_response.msg;
+            // 仅限流/超时类错误重试，业务错误直接抛出
+            if (errMsg.includes('限流') || errMsg.includes('frequency') || errMsg.includes('超时')) {
+              reject(new Error('RETRYABLE:' + errMsg));
+              } else {
+                reject(new Error(`[${errCode}] ${errMsg}`));
               }
+            return;
+        }
+
               resolve(json);
             } catch (e) {
               reject(new Error('响应解析失败: ' + data.slice(0, 200)));
