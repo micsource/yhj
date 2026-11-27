@@ -36,6 +36,7 @@ jobs:
           TB_APP_KEY: ${{ secrets.TB_APP_KEY }}
           TB_APP_SECRET: ${{ secrets.TB_APP_SECRET }}
           TB_ADZONE_ID: ${{ secrets.TB_ADZONE_ID }}
+          TB_SITE_ID: ${{ secrets.TB_SITE_ID }}  # 补上这一行，把Secret注入到脚本运行环境
         run: node src/fetch_goods.js
 
       # 5. 部署到 GitHub Pages
