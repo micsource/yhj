@@ -113,11 +113,13 @@ async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
     adzone_id: adzoneId,
     site_id: siteId, // ✅ 补上之前漏掉的必填站点ID
     page_no: 1,
-    page_size: 50,
+    page_size: 20, // 首次测试先调小每页数量
+    platform: 2, // 指定无线端商品，匹配移动端推广
     sort: 'total_sales_des',
-    has_coupon: 'true',
-    start_tk_rate: '1000', // 最低佣金10%
-    q: '高佣爆款', // ✅ 补上这行搜索关键词，或者传cat类目ID，二选一即可
+    q: '纸巾', // ✅ 换成肯定有结果的日用刚需词，不要用"高佣爆款"这类泛营销词
+    // ✅ 首次测试先注释掉所有筛选条件，确认能拿到数据后再逐步放开
+    // has_coupon: 'true',
+    // start_tk_rate: '1000',
   }, appKey, appSecret);
 
   console.log('接口返回成功，开始解析商品数据');
