@@ -86,30 +86,35 @@ function formatTime(date) {
  * 拉取淘宝客高佣商品列表（官方现行通用物料搜索接口）
  */
 async function getDataFromTaobao(appKey, appSecret, adzoneId) {
-  const res = await requestTop('taobao.tbk.dg.material.optional', {
-    adzone_id: adzoneId,
+  const res = await requestTop('taobao.tbk.dg.material.optional.upgrade', {
+    adzone_id: adzoneId,        // 只填 PID 最后一段数字
+    q: '女装',                   // 换成你的选品关键词，或改用 cat 类目筛选
     page_no: 1,
-    page_size: 50, // 单页最大支持100，建议50足够用
-    sort: 'total_sales_des', // 按销量倒序
-    platform: 2, // 2=无线端商品
-    has_coupon: 'true', // 只返回有优惠券的商品
-    start_tk_rate: '1000', // 最低佣金比例10%（单位是千分比，1000=10%）
-    end_tk_rate: '9000', // 最高佣金比例90%
+    page_size: 50,
+    sort: 'total_sales_des',
+    has_coupon: 'true',
+    start_tk_rate: '1000',      // 最低佣金 10%（千分比）
   }, appKey, appSecret);
 
-  // 新版接口返回路径对应调整
-  const list = res.tbk_dg_material_optional_response?.result_list?.map_data || [];
-  return list.map(item => ({
-    title: item.title,
-    pict_url: item.pict_url,
-    zk_final_price: item.zk_final_price,
-    coupon_amount: item.coupon_info ? parseCouponAmount(item.coupon_info) : 0,
-    num_iid: item.item_id,
-    commission_rate: item.commission_rate,
-    volume: item.volume,
-    coupon_share_url: item.coupon_share_url,
-  }));
+  // 先打印一次原始返回，核对根节点与字段名（确认后可删掉这行）
+  console.log(JSON.stringify(res, null, 2).slice(0, 2000));
+
+  const list = res.tbk_dg_material_optional_upgrade_response?.result_list?.map_data || [];
+  return list.map(item => {
+    const income = item.income_info || {};
+    return {
+      title: item.title,
+      pict_url: item.pict_url,
+      zk_final_price: item.zk_final_price,
+      coupon_amount: item.coupon_info ? parseCouponAmount(item.coupon_info) : 0,
+      num_iid: item.item_id,                       // 升级版字段名是 item_id
+      commission_rate: income.commission_rate || item.commission_rate,
+      volume: item.volume,
+      coupon_share_url: item.coupon_share_url,
+    };
+  });
 }
+
 
 // 解析券面额（新版接口券信息是字符串格式，需要提取数字）
 function parseCouponAmount(couponInfo) {
