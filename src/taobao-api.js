@@ -142,9 +142,13 @@ async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
     const commission = parseFloat(income.commission_amount || 0).toFixed(1);
     const volume = basic.volume || 0;
 
-    // 4. 推广链接补https前缀
+    // 4. 推广链接处理：补https前缀 + 移除mt=1移动端标记，避免PC端强制登录
     let jumpUrl = publish.coupon_share_url || publish.click_url || '';
     if (jumpUrl.startsWith('//')) jumpUrl = 'https:' + jumpUrl;
+    // ✅ 核心修复：删掉导致PC跳登录的mt=1参数，和你手动生成的链接结构完全一致
+    jumpUrl = jumpUrl.replace(/([?&])mt=1&?/g, (match, prefix) => prefix === '?' ? '?' : '')
+                 .replace(/[?&]$/, ''); // 清理末尾残留的问号/&符号
+
 
     return {
       title,
