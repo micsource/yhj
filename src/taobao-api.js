@@ -46,14 +46,16 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
 
       const result = await new Promise((resolve, reject) => {
         const req = https.request({
-          host: GATEWAY_HOST,
-          path: GATEWAY_PATH,
-          method: 'POST',
-          timeout: 15000,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-            'Content-Length': Buffer.byteLength(body),
-            'User-Agent': 'Mozilla/5.0 (compatible; TBK-Static-Site/1.0)',
+         host: GATEWAY_HOST,
+        path: GATEWAY_PATH,
+        method: 'POST',
+        family: 4, // ✅ 强制IPv4连接，兼容所有Node版本，彻底解决IPv6 ENETUNREACH错误
+        timeout: 20000, // 超时时间加到20秒，规避网络波动
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+          'Content-Length': Buffer.byteLength(body),
+          // ✅ 用真实浏览器UA，避免被淘宝网关风控拦截
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
           },
         }, (res) => {
           let data = '';
@@ -82,8 +84,15 @@ async function requestTop(method, bizParams, appKey, appSecret, retry = 3) {
           });
         });
         // 网络类错误也标记为可重试
-        req.on('error', e => reject(new Error('RETRYABLE:' + e.message)));
-        req.on('timeout', () => { req.destroy(); reject(new Error('RETRYABLE:请求超时')); });
+        req.on('error', e => {
+          console.log('网络错误详情：', e.code, e.message); // 打印完整错误码，方便排查
+          reject(new Error('RETRYABLE:' + (e.message || e.code || '网络连接失败')));
+        });
+        req.on('timeout', () => { 
+          req.destroy(); 
+          reject(new Error('RETRYABLE:请求超时')); 
+        });
+
         req.write(body);
         req.end();
       });
@@ -112,39 +121,39 @@ async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
   const res = await requestTop('taobao.tbk.dg.material.recommend', {
     page_size: '20',
     page_no: '1',
-    material_id: '4092', // 个人通用高佣爆品池，换品类改这个ID即可
+    material_id: '4092', // 4092是你已经验证能出数据的有好货池，保持不变
     adzone_id: adzoneId,
     site_id: siteId,
-    promotion_type: '2', // 仅返回有优惠券的商品
+    promotion_type: '2',
   }, appKey, appSecret);
 
   console.log('接口返回商品总数：', res.tbk_dg_material_recommend_response?.total_count || 0);
   const list = res.tbk_dg_material_recommend_response?.result_list?.map_data || [];
 
   return list.map(item => {
-    // 按官方返回结构分层取字段
-    const basic = item.item_basic_info || {}; // 基础信息：标题、图片、销量
-    const price = item.price_promotion_info || {}; // 价格信息：原价、券后价
-    const publish = item.publish_info || {}; // 推广信息：佣金、跳转链接
+    const basic = item.item_basic_info || {};
+    const price = item.price_promotion_info || {};
+    const publish = item.publish_info || {};
     const income = publish.income_info || {};
 
-    // 1. 基础字段处理：图片补https前缀
+    // 基础字段
     const title = basic.title || '优惠商品';
     let pictUrl = basic.pict_url || basic.white_image || '';
     if (pictUrl.startsWith('//')) pictUrl = 'https:' + pictUrl;
 
-    // 2. 价格&优惠券计算：直接用返回的数值，不用解析字符串
+    // 价格计算
     const originalPrice = parseFloat(price.zk_final_price || 0);
     const couponPrice = parseFloat(price.final_promotion_price || originalPrice);
-    const couponAmount = Math.max(0, (originalPrice - couponPrice).toFixed(1)); // 自动算券面额，不用解析coupon_info
-
-    // 3. 佣金处理：优先用接口返回的预估佣金金额，避免单位计算错误
+    const couponAmount = Math.max(0, (originalPrice - couponPrice).toFixed(1));
     const commission = parseFloat(income.commission_amount || 0).toFixed(1);
     const volume = basic.volume || 0;
 
-    // 4. 推广链接补https前缀
+    // ✅ 链接处理放在这里，是拿到数据之后执行，不会影响接口请求
     let jumpUrl = publish.coupon_share_url || publish.click_url || '';
     if (jumpUrl.startsWith('//')) jumpUrl = 'https:' + jumpUrl;
+    // 移除mt=1移动端标记，解决PC端强制登录
+    jumpUrl = jumpUrl.replace(/([?&])mt=1&?/g, (_, prefix) => prefix === '?' ? '?' : '')
+                     .replace(/[?&]$/, '');
 
     return {
       title,
@@ -158,6 +167,7 @@ async function getDataFromTaobao(appKey, appSecret, siteId, adzoneId) {
     };
   });
 }
+
 
 
 module.exports = { getDataFromTaobao };
